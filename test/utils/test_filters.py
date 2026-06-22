@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from datetime import datetime, timezone
+
 import pytest
 
 from haystack import Document
@@ -128,6 +130,30 @@ document_matches_filter_data = [
         Document(meta={"date": "1969-07-21T20:17:40"}),
         False,
         id="> operator with smaller ISO 8601 datetime Document value",
+    ),
+    pytest.param(
+        {"field": "meta.date", "operator": ">", "value": datetime(2023, 1, 1, tzinfo=timezone.utc)},
+        Document(meta={"date": "2024-01-01"}),
+        True,
+        id="> operator with datetime filter value and ISO 8601 string Document value",
+    ),
+    pytest.param(
+        {"field": "meta.date", "operator": ">=", "value": datetime(2024, 1, 1, tzinfo=timezone.utc)},
+        Document(meta={"date": "2024-01-01T00:00:00+00:00"}),
+        True,
+        id=">= operator with aware datetime filter value and ISO 8601 string Document value",
+    ),
+    pytest.param(
+        {"field": "meta.date", "operator": "<", "value": datetime(2025, 1, 1, tzinfo=timezone.utc)},
+        Document(meta={"date": "2024-01-01"}),
+        True,
+        id="< operator with datetime filter value and ISO 8601 string Document value",
+    ),
+    pytest.param(
+        {"field": "meta.date", "operator": "<=", "value": datetime(2024, 1, 1)},
+        Document(meta={"date": "2024-01-01T00:00:00+00:00"}),
+        True,
+        id="<= operator with naive datetime filter value and aware ISO 8601 string Document value",
     ),
     pytest.param(
         {"field": "meta.page", "operator": ">", "value": 10},
